@@ -81,6 +81,10 @@ The flow diagram is presented in the picture below:
 4. After programming, the OLED screen should light up with the message: "Motion detected" 
 5. Follow the steps provided by the display to measure the temperature, contactless, as in the animation below:
     <br><img src="images/Demo.GIF" alt="Demo" width="560"/>
+6. Watch the full demo of this application in the video link, below:
+   - [AVR® DA Temperature Access Point Demo](https://youtu.be/6xuM3KN8ohE)
+   - [![AVR® DA Temperature Access Point Demo](https://img.youtube.com/vi/6xuM3KN8ohE/hqdefault.jpg)](https://youtu.be/6xuM3KN8ohE)
+
 
 ## Summary
 This example provides a method for using the The AVR® DA family of microcontrollers as an Temperature access point with auto-scanning and low power functions.
