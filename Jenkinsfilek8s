@@ -19,6 +19,7 @@ pipeline {
 		DEPLOY_TOOL_URL = 'https://bitbucket.microchip.com/scm/citd/tool-github-deploy.git'
 		DEPLOY_SCRIPT_DIR = 'tool-github-deploy'
 		DEPLOY_SCRIPT_FILE = 'deploy-source-as-is.sh'
+		PROJECT_CONFIGURATION_OF_HEX_TO_DEPLOY = 'pro'
 	}
 
     options {
@@ -66,13 +67,22 @@ pipeline {
 				}
             }
 			steps {
-				script {
+				script {				
+					def hexFiles = findFiles(glob: "**/${PROJECT_CONFIGURATION_OF_HEX_TO_DEPLOY}/**/*.hex")
+					hexFiles = hexFiles.join(", ")		
+					
+					def githubObj = getGiHubInfo()
+					
 					execute("git clone ${env.DEPLOY_TOOL_URL}")		
 					
 					withCredentials([usernamePassword(credentialsId: '8bit-examples.github.com', usernameVariable: 'USER_NAME', passwordVariable:'USER_PASS' )]) {					
 						execute("cd ${env.DEPLOY_SCRIPT_DIR} && bash ${env.DEPLOY_SCRIPT_FILE} ${env.BITBUCKET_URL} ${env.GITHUB_URL} ${USER_NAME} ${USER_PASS} '--tag ${env.TAG_NAME}'")	
 					}	
 
+					withCredentials([usernamePassword(credentialsId: '8bit-examples.github.com', usernameVariable: 'USER_NAME', passwordVariable:'USER_PASS' )]) {					
+						execute("python ./tool-github-deploy/tool-github-deploy/tool-github-deploy.py -rlo=true -gpat=${USER_PASS}  -rpn=${githubObj.repoName} -rltv=${env.TAG_NAME} -rltt=${env.TAG_NAME} -rlua='${hexFiles}' -rle=true -dmfd=true")
+					}
+					
                     sendSuccessfulGithubDeploymentEmail()					
 				}
 			}
@@ -97,6 +107,19 @@ def execute(String cmd) {
 	} else {
 		bat cmd
 	}
+}
+
+def getGiHubInfo()
+{
+	def githubObj = [
+		'ownerName':'',
+		'repoName':''
+		]
+	String[] splitURLString = "${env.GITHUB_URL}".split("/")
+	githubObj.repoName = splitURLString[splitURLString.size()-1]
+	githubObj.repoName = githubObj.repoName.replace(".git","")
+	githubObj.ownerName = splitURLString[splitURLString.size()-2]
+	return githubObj
 }
 
 def sendPipelineFailureEmail () {
